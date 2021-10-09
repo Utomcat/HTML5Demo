@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>示例一</title>
+    <link rel="stylesheet" href="resources/layui/css/layui.css" media="all"/>
+    <script src="resources/layui/layui.js"></script>
+</head>
+<body>
+<table id="demo"></table>
+<div id="tool">
+    <button type="button" onclick="submit()"> 提交</button>
+    <button type="submit" onclick="submit()"> 提交</button>
+</div>
+</body>
+<script type="text/javascript">
+    layui.use('table', function () {
+        let table = layui.table;
+
+        //第一个实例
+        let ta = table.render({
+            elem: '#demo'
+            , id : 'layTable'
+            , width: '380'
+            , method: "get"
+            , url: 'http://127.0.0.1:8080/user/findAllUser' //数据接口
+            , page: false //开启分页
+            , parseData: function (res) { //res 即为原始返回的数据
+                if (res.code === 200) {
+                    return {
+                        "code": 0, //解析接口状态
+                        "msg": "", //解析提示文本
+                        "count": res.data.list.length, //解析数据长度
+                        "data": res.data.list //解析数据列表
+                    };
+                } else {
+                    layer.msg("请求失败,错误信息为: " + res.message);
+                }
+
+            }
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: 80}
+                , {field: 'name', title: '用户名', width: 200}
+                , {field: 'deleted', title: '删除标志', width: 96}
+            ]]
+            , toolbar: 'default'
+            , defaultToolbar: []
+            , done: function (res, curr, count) {
+                viewObj.tbData = res.data;
+            }
+        });
+
+        //触发事件
+        table.on('toolbar', function(obj){
+            let checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'add':
+                    let oldData = table.cache['layTable'];
+                    console.log(oldData);
+                    let newRow = { id: '',  name: '请填写名称', deleted: false };
+                    oldData.push(newRow);
+                    ta.reload({
+                        data: oldData
+                    });
+                    break;
+                case 'delete':
+                    layer.msg('删除');
+                    break;
+                case 'update':
+                    layer.msg('编辑');
+                    break;
+            }
+        });
+    });
+
+
+</script>
+</html>
